@@ -1,0 +1,1 @@
+# dogesound-compilation-mint-contracts
