@@ -5,32 +5,20 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "./interfaces/ICompMint.sol";
 import "./interfaces/IFungibleToken.sol";
 
-contract CompV2Mint is Ownable, ICompMint, IERC1155Receiver, ERC165 {
+contract CompV2Mint is Ownable, IERC1155Receiver, ERC165 {
 
     IERC1155 public nft;
-    IFungibleToken public pmix;
 
-    constructor(IERC1155 _nft, IFungibleToken _pmix) {
+    constructor(IERC1155 _nft) {
         nft = _nft;
-        pmix = _pmix;
     }
 
-    function mint(uint256 id) override public {
+    function mint(uint256 id) payable public {
+        require(msg.value == 20 ether);
         nft.safeTransferFrom(address(this), msg.sender, id, 1, "");
-        pmix.transferFrom(msg.sender, owner(), 20 ether);
-    }
-    
-    function mintWithPermit(uint256 id,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) override external {
-        pmix.permit(msg.sender, address(this), 20 ether, deadline, v, r, s);
-        mint(id);
+        payable(owner()).transfer(msg.value);
     }
 
     function onERC1155Received(
